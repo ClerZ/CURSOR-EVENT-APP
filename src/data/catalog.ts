@@ -6,6 +6,7 @@ export type Game = {
   icon: string;
   desc: string;
   url: string;
+  mobileFriendly?: boolean;
   isCommunity?: boolean;
 };
 
@@ -18,6 +19,7 @@ export const GAMES: Game[] = [
     icon: "🟩",
     desc: "Guess the secret five-letter word in six tries. Every guess recolors its tiles green, yellow, or gray to steer your next attempt — one shared puzzle a day.",
     url: "https://www.nytimes.com/games/wordle/index.html",
+    mobileFriendly: true,
   },
   {
     id: "connections",
@@ -27,6 +29,7 @@ export const GAMES: Game[] = [
     icon: "🔗",
     desc: "Sort sixteen words into four hidden groups of four. Categories run from obvious to devilishly tricky, and a wrong group costs you a strike.",
     url: "https://www.nytimes.com/games/connections",
+    mobileFriendly: true,
   },
   {
     id: "scrabble",
@@ -54,6 +57,7 @@ export const GAMES: Game[] = [
     icon: "🎨",
     desc: "Free browser Pictionary: one player draws a secret word while everyone else races to guess it in the chat. The artist rotates every round.",
     url: "https://skribbl.io",
+    mobileFriendly: true,
   },
   {
     id: "gartic",
@@ -63,6 +67,7 @@ export const GAMES: Game[] = [
     icon: "📞",
     desc: "A drawing-and-guessing telephone game — your prompt gets redrawn and re-guessed down a chain of players, with gloriously mangled results revealed at the end.",
     url: "https://garticphone.com",
+    mobileFriendly: true,
   },
   {
     id: "quickdraw",
@@ -72,6 +77,7 @@ export const GAMES: Game[] = [
     icon: "✏️",
     desc: "A twenty-second doodling game where a neural network tries to guess what you're sketching in real time. Built by Google's AI research team.",
     url: "https://quickdraw.withgoogle.com",
+    mobileFriendly: true,
   },
   {
     id: "krunker",
@@ -108,6 +114,7 @@ export const GAMES: Game[] = [
     icon: "🐍",
     desc: "Grow a glowing snake by eating pellets and cutting off rivals — the game that kicked off the whole '.io' genre.",
     url: "https://slither.io",
+    mobileFriendly: true,
   },
   {
     id: "agario",
@@ -117,6 +124,7 @@ export const GAMES: Game[] = [
     icon: "🔵",
     desc: "Absorb smaller cells, dodge bigger ones, and try to become the biggest blob on the board in this minimalist multiplayer classic.",
     url: "https://agar.io",
+    mobileFriendly: true,
   },
   {
     id: "diepio",
@@ -135,6 +143,7 @@ export const GAMES: Game[] = [
     icon: "🟪",
     desc: "Claim territory by drawing a trail back to your zone. Cross another player's trail and you take them out — but the reverse is just as true.",
     url: "https://paper-io.com",
+    mobileFriendly: true,
   },
   {
     id: "2048",
@@ -144,6 +153,7 @@ export const GAMES: Game[] = [
     icon: "🔢",
     desc: "Slide numbered tiles to merge matching pairs and reach the elusive 2048 tile. Simple rules, endlessly replayable.",
     url: "https://play2048.co",
+    mobileFriendly: true,
   },
   {
     id: "sudoku",
@@ -153,6 +163,7 @@ export const GAMES: Game[] = [
     icon: "🧩",
     desc: "Unlimited free Sudoku boards across every difficulty, with hint and note tools built right into the browser grid.",
     url: "https://sudoku.com",
+    mobileFriendly: true,
   },
   {
     id: "tetris",
@@ -162,6 +173,7 @@ export const GAMES: Game[] = [
     icon: "🧱",
     desc: "The official home of the falling-block classic, playable free in the browser with the same line-clearing tension as ever.",
     url: "https://tetris.com",
+    mobileFriendly: true,
   },
   {
     id: "chess",
@@ -171,6 +183,7 @@ export const GAMES: Game[] = [
     icon: "♟️",
     desc: "Play chess against people worldwide or a computer opponent, with puzzles and lessons alongside free live games.",
     url: "https://www.chess.com",
+    mobileFriendly: true,
   },
   {
     id: "geoguessr",
@@ -189,17 +202,37 @@ export const GAMES: Game[] = [
     icon: "🕵️",
     desc: "Two teams give one-word clues to guide teammates to their agents on a shared word grid, while dodging the other team's agents and the assassin.",
     url: "https://codenames.game",
+    mobileFriendly: true,
   },
 ];
 
-export const CATEGORIES = ["All", "Word", "Drawing", "Arcade", "Puzzle", "Strategy", "Community"] as const;
+export const CATEGORIES = ["All", "Mobile friendly", "Word", "Drawing", "Arcade", "Puzzle", "Strategy", "Community"] as const;
 
-export const FALLBACK_DEALS = [
-  { title: "Hollow Knight", salePrice: "4.99", normalPrice: "14.99", savings: 67, link: "https://store.steampowered.com/app/367520/Hollow_Knight/" },
-  { title: "Stardew Valley", salePrice: "8.99", normalPrice: "14.99", savings: 40, link: "https://store.steampowered.com/app/413150/Stardew_Valley/" },
-  { title: "Portal 2", salePrice: "2.49", normalPrice: "9.99", savings: 75, link: "https://store.steampowered.com/app/620/Portal_2/" },
-  { title: "Terraria", salePrice: "4.99", normalPrice: "9.99", savings: 50, link: "https://store.steampowered.com/app/105600/Terraria/" },
-  { title: "Slay the Spire", salePrice: "9.99", normalPrice: "24.99", savings: 60, link: "https://store.steampowered.com/app/646570/Slay_the_Spire/" },
+export type DealStore = "Steam" | "Epic Games" | "Google Play";
+
+export type Deal = {
+  title: string;
+  salePrice: number;
+  normalPrice: number;
+  savings: number;
+  link: string;
+  store: DealStore;
+};
+
+export const DEAL_STORES = ["All", "Steam", "Epic Games", "Google Play"] as const;
+
+export const FALLBACK_DEALS: Deal[] = [
+  { title: "Hollow Knight", salePrice: 4.99, normalPrice: 14.99, savings: 67, link: "https://store.steampowered.com/app/367520/Hollow_Knight/", store: "Steam" },
+  { title: "Stardew Valley", salePrice: 8.99, normalPrice: 14.99, savings: 40, link: "https://store.steampowered.com/app/413150/Stardew_Valley/", store: "Steam" },
+  { title: "Portal 2", salePrice: 2.49, normalPrice: 9.99, savings: 75, link: "https://store.steampowered.com/app/620/Portal_2/", store: "Steam" },
+  { title: "Terraria", salePrice: 4.99, normalPrice: 9.99, savings: 50, link: "https://store.steampowered.com/app/105600/Terraria/", store: "Steam" },
+  { title: "Slay the Spire", salePrice: 9.99, normalPrice: 24.99, savings: 60, link: "https://store.steampowered.com/app/646570/Slay_the_Spire/", store: "Steam" },
+  { title: "Epic weekly free games", salePrice: 0, normalPrice: 19.99, savings: 100, link: "https://store.epicgames.com/free-games", store: "Epic Games" },
+  { title: "Fortnite", salePrice: 0, normalPrice: 0, savings: 100, link: "https://store.epicgames.com/p/fortnite", store: "Epic Games" },
+  { title: "Rocket League", salePrice: 0, normalPrice: 0, savings: 100, link: "https://store.epicgames.com/p/rocket-league", store: "Epic Games" },
+  { title: "Fall Guys", salePrice: 0, normalPrice: 0, savings: 100, link: "https://store.epicgames.com/p/fall-guys", store: "Epic Games" },
+  { title: "Google Play Games offers", salePrice: 0, normalPrice: 9.99, savings: 100, link: "https://play.google.com/store/games", store: "Google Play" },
+  { title: "Google Play Pass trial", salePrice: 0, normalPrice: 4.99, savings: 100, link: "https://play.google.com/store/pass/getstarted", store: "Google Play" },
+  { title: "Mobile game specials", salePrice: 0.99, normalPrice: 4.99, savings: 80, link: "https://play.google.com/store/apps/category/GAME", store: "Google Play" },
+  { title: "Indie games on sale", salePrice: 1.99, normalPrice: 9.99, savings: 80, link: "https://play.google.com/store/apps/category/GAME_INDIE", store: "Google Play" },
 ];
-
-export type Deal = (typeof FALLBACK_DEALS)[number];

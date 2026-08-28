@@ -15,15 +15,51 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { CATEGORIES, Deal, FALLBACK_DEALS, GAMES, Game } from "./src/data/catalog";
+import {
+  CATEGORIES,
+  DEAL_STORES,
+  Deal,
+  DealStore,
+  FALLBACK_DEALS,
+  GAMES,
+  Game,
+} from "./src/data/catalog";
 import { categoryColors, colors } from "./src/theme";
 
 const STORAGE_KEY = "gamer-hub-user-games";
 const CARD_WIDTH = Math.min(280, Dimensions.get("window").width * 0.78);
 const CARD_GAP = 14;
 const SNAP = CARD_WIDTH + CARD_GAP;
+const DEAL_CARD_HEIGHT = 144;
+const DEAL_GAP = 12;
+const DEAL_SNAP = DEAL_CARD_HEIGHT + DEAL_GAP;
 
 type Tab = "play" | "library" | "deals";
+type DealFilter = (typeof DEAL_STORES)[number];
+
+const REGION_CURRENCIES: Record<string, string> = {
+  AU: "AUD",
+  CA: "CAD",
+  CH: "CHF",
+  CN: "CNY",
+  DE: "EUR",
+  ES: "EUR",
+  FR: "EUR",
+  GB: "GBP",
+  ID: "IDR",
+  IN: "INR",
+  IT: "EUR",
+  JP: "JPY",
+  KR: "KRW",
+  MY: "MYR",
+  NL: "EUR",
+  NZ: "NZD",
+  PH: "PHP",
+  SG: "SGD",
+  TH: "THB",
+  US: "USD",
+  VN: "VND",
+};
 
 function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();
@@ -44,6 +80,28 @@ function domainOf(url: string) {
 
 function slug(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function currencyFromLocale(locale: string) {
+  const region = locale.split(/[-_]/)[1]?.toUpperCase();
+  return (region && REGION_CURRENCIES[region]) || "USD";
+}
+
+function mixDeals(items: Deal[]) {
+  const storeOrder: DealStore[] = ["Steam", "Epic Games", "Google Play"];
+  const buckets = Object.fromEntries(
+    storeOrder.map((store) => [store, items.filter((deal) => deal.store === store)]),
+  ) as Record<DealStore, Deal[]>;
+  const mixed: Deal[] = [];
+  let row = 0;
+  while (storeOrder.some((store) => buckets[store][row])) {
+    storeOrder.forEach((store) => {
+      const deal = buckets[store][row];
+      if (deal) mixed.push(deal);
+    });
+    row += 1;
+  }
+  return mixed;
 }
 
 function Tag({ label }: { label: string }) {
@@ -67,9 +125,16 @@ export default function App() {
   const [deals, setDeals] = useState<Deal[]>(FALLBACK_DEALS);
   const [dealsLive, setDealsLive] = useState(false);
   const [dealsLoading, setDealsLoading] = useState(true);
+  const [dealStore, setDealStore] = useState<DealFilter>("All");
+  const [showAllDeals, setShowAllDeals] = useState(false);
+  const [dealIndex, setDealIndex] = useState(0);
+  const [dealAutoPaused, setDealAutoPaused] = useState(false);
+  const [currency, setCurrency] = useState({ code: "USD", rate: 1, locale: "en-US", detected: false });
   const [form, setForm] = useState({ name: "", url: "", category: "Word", desc: "" });
 
   const listRef = useRef<ScrollView>(null);
+  const dealListRef = useRef<ScrollView>(null);
+  const dealPauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const allGames = useMemo(() => GAMES.concat(userGames), [userGames]);
 
   useEffect(() => {
@@ -120,15 +185,17 @@ export default function App() {
         if (!res.ok) throw new Error("bad");
         const data = await res.json();
         if (!Array.isArray(data) || !data.length) throw new Error("empty");
-        setDeals(
-          data.slice(0, 10).map((d: { title: string; salePrice: string; normalPrice: string; savings: string; dealID: string }) => ({
+        const steamDeals: Deal[] = data
+          .slice(0, 10)
+          .map((d: { title: string; salePrice: string; normalPrice: string; savings: string; dealID: string }) => ({
             title: d.title,
-            salePrice: parseFloat(d.salePrice).toFixed(2),
-            normalPrice: parseFloat(d.normalPrice).toFixed(2),
+            salePrice: parseFloat(d.salePrice),
+            normalPrice: parseFloat(d.normalPrice),
             savings: Math.round(parseFloat(d.savings)),
             link: "https://www.cheapshark.com/redirect?dealID=" + d.dealID,
-          })),
-        );
+            store: "Steam",
+          }));
+        setDeals([...steamDeals, ...FALLBACK_DEALS.filter((deal) => deal.store !== "Steam")]);
         setDealsLive(true);
       } catch {
         setDeals(FALLBACK_DEALS);
@@ -137,6 +204,47 @@ export default function App() {
         setDealsLoading(false);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const browserLocale = Intl.DateTimeFormat().resolvedOptions().locale || "en-US";
+      let code = currencyFromLocale(browserLocale);
+      let locale = browserLocale;
+      try {
+        const locationResponse = await fetch("https://ipapi.co/json/");
+        if (locationResponse.ok) {
+          const location = await locationResponse.json();
+          code = typeof location.currency === "string" ? location.currency : code;
+          locale =
+            typeof location.languages === "string"
+              ? location.languages.split(",")[0].replace("_", "-")
+              : locale;
+        }
+      } catch {
+        /* Locale-based fallback is already selected. */
+      }
+
+      let rate = 1;
+      if (code !== "USD") {
+        try {
+          const ratesResponse = await fetch("https://open.er-api.com/v6/latest/USD");
+          if (!ratesResponse.ok) throw new Error("Exchange-rate feed unavailable");
+          const rates = await ratesResponse.json();
+          const localRate = Number(rates.rates?.[code]);
+          if (!localRate) throw new Error("Currency is not supported");
+          rate = localRate;
+        } catch {
+          code = "USD";
+          rate = 1;
+        }
+      }
+      if (active) setCurrency({ code, rate, locale, detected: true });
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -149,7 +257,13 @@ export default function App() {
     const q = query.trim().toLowerCase();
     return allGames.filter((g) => {
       if (category === "Community" && !g.isCommunity) return false;
-      if (category !== "All" && category !== "Community" && g.category !== category) return false;
+      if (category === "Mobile friendly" && !g.mobileFriendly) return false;
+      if (
+        category !== "All" &&
+        category !== "Community" &&
+        category !== "Mobile friendly" &&
+        g.category !== category
+      ) return false;
       if (!q) return true;
       return (
         g.name.toLowerCase().includes(q) ||
@@ -159,6 +273,56 @@ export default function App() {
       );
     });
   }, [allGames, category, query]);
+
+  const filteredDeals = useMemo(() => {
+    const matching = dealStore === "All" ? deals : deals.filter((deal) => deal.store === dealStore);
+    return dealStore === "All" ? mixDeals(matching) : matching;
+  }, [dealStore, deals]);
+
+  const visibleDeals = useMemo(
+    () => (showAllDeals ? filteredDeals : filteredDeals.slice(0, 6)),
+    [filteredDeals, showAllDeals],
+  );
+
+  useEffect(() => {
+    setDealIndex(0);
+    dealListRef.current?.scrollTo({ y: 0, animated: false });
+  }, [dealStore, showAllDeals]);
+
+  useEffect(() => {
+    if (tab !== "deals" || dealAutoPaused || visibleDeals.length < 2) return;
+    const timer = setInterval(() => {
+      setDealIndex((current) => {
+        const next = (current + 1) % visibleDeals.length;
+        dealListRef.current?.scrollTo({ y: next * DEAL_SNAP, animated: true });
+        return next;
+      });
+    }, 4200);
+    return () => clearInterval(timer);
+  }, [dealAutoPaused, tab, visibleDeals.length]);
+
+  useEffect(
+    () => () => {
+      if (dealPauseTimer.current) clearTimeout(dealPauseTimer.current);
+    },
+    [],
+  );
+
+  const pauseDealAutoScroll = useCallback(() => {
+    setDealAutoPaused(true);
+    if (dealPauseTimer.current) clearTimeout(dealPauseTimer.current);
+    dealPauseTimer.current = setTimeout(() => setDealAutoPaused(false), 10000);
+  }, []);
+
+  const formatMoney = useCallback(
+    (usd: number) =>
+      new Intl.NumberFormat(currency.locale, {
+        style: "currency",
+        currency: currency.code,
+        maximumFractionDigits: ["JPY", "KRW", "IDR", "VND"].includes(currency.code) ? 0 : 2,
+      }).format(usd * currency.rate),
+    [currency],
+  );
 
   async function openUrl(url: string) {
     await WebBrowser.openBrowserAsync(url);
@@ -194,6 +358,7 @@ export default function App() {
       tags: ["community"],
       icon: icons[Math.floor(Math.random() * icons.length)],
       url: url.toString(),
+      mobileFriendly: true,
       isCommunity: true,
     };
     await saveCommunity(game);
@@ -341,6 +506,7 @@ export default function App() {
                 <Text style={styles.libDesc} numberOfLines={3}>
                   {item.desc}
                 </Text>
+                {item.mobileFriendly ? <Text style={styles.mobileReady}>📱 Mobile friendly</Text> : null}
                 {item.isCommunity ? <Text style={styles.community}>★ Added on this device</Text> : null}
               </Pressable>
             )}
@@ -352,25 +518,76 @@ export default function App() {
         <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
           <Text style={styles.sectionEyebrow}>BEYOND FREE-TO-PLAY</Text>
           <Text style={styles.sectionTitle}>Right now on sale</Text>
-          <Text style={styles.lede}>Steam discounts via CheapShark. Tap a ticket to open the deal.</Text>
+          <Text style={styles.lede}>A rotating mix from Steam, Epic Games, and Google Play. Tap a ticket to open the store.</Text>
           <View style={styles.badge}>
             {dealsLoading ? <ActivityIndicator color={colors.mint} size="small" /> : <View style={styles.pulse} />}
             <Text style={styles.badgeTxt}>
-              {dealsLoading ? "Loading…" : dealsLive ? "Live from CheapShark" : "Example deals — live feed unavailable"}
+              {dealsLoading ? "Loading…" : dealsLive ? "Live Steam prices + curated offers" : "Curated offers — live feed unavailable"}
             </Text>
           </View>
-          {deals.map((d) => (
-            <Pressable key={d.title + d.link} style={styles.deal} onPress={() => openUrl(d.link)}>
-              <Text style={styles.dealStore}>STEAM</Text>
-              <Text style={styles.dealTitle}>{d.title}</Text>
-              <View style={styles.dealRow}>
-                <Text style={styles.dealSale}>${d.salePrice}</Text>
-                <Text style={styles.dealNormal}>${d.normalPrice}</Text>
-                <Text style={styles.dealSave}>-{d.savings}%</Text>
-              </View>
-              <Text style={styles.dealLink}>View deal ↗</Text>
+          <View style={styles.currencyRow}>
+            <Text style={styles.currencyTxt}>
+              {currency.detected ? `Prices converted to ${currency.code}` : "Detecting local currency…"}
+            </Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pills}>
+            {DEAL_STORES.map((store) => (
+              <Pressable
+                key={store}
+                onPress={() => {
+                  setDealStore(store);
+                  setShowAllDeals(false);
+                }}
+                style={[styles.pill, dealStore === store && styles.pillOn]}
+              >
+                <Text style={[styles.pillTxt, dealStore === store && styles.pillTxtOn]}>{store}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+          <View style={styles.dealViewport}>
+            <ScrollView
+              ref={dealListRef}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              snapToInterval={DEAL_SNAP}
+              decelerationRate="fast"
+              onScrollBeginDrag={pauseDealAutoScroll}
+              onTouchStart={pauseDealAutoScroll}
+              onMomentumScrollEnd={(event) => {
+                const next = Math.round(event.nativeEvent.contentOffset.y / DEAL_SNAP);
+                setDealIndex(Math.max(0, Math.min(next, visibleDeals.length - 1)));
+              }}
+            >
+              {visibleDeals.map((deal) => (
+                <Pressable
+                  key={deal.store + deal.title + deal.link}
+                  style={styles.deal}
+                  onPress={() => openUrl(deal.link)}
+                >
+                  <Text style={styles.dealStore}>{deal.store.toUpperCase()}</Text>
+                  <Text style={styles.dealTitle} numberOfLines={1}>{deal.title}</Text>
+                  <View style={styles.dealRow}>
+                    <Text style={styles.dealSale}>{formatMoney(deal.salePrice)}</Text>
+                    {deal.normalPrice > deal.salePrice ? (
+                      <Text style={styles.dealNormal}>{formatMoney(deal.normalPrice)}</Text>
+                    ) : null}
+                    <Text style={styles.dealSave}>-{deal.savings}%</Text>
+                  </View>
+                  <Text style={styles.dealLink}>View deal ↗</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+          <Text style={styles.autoNote}>
+            {dealAutoPaused ? "Manual scroll detected · auto-scroll resumes in 10 seconds" : "Auto-scrolling · swipe anytime"}
+          </Text>
+          {filteredDeals.length > 6 ? (
+            <Pressable style={styles.viewMore} onPress={() => setShowAllDeals((shown) => !shown)}>
+              <Text style={styles.viewMoreTxt}>
+                {showAllDeals ? "Show fewer deals" : `View more deals (${filteredDeals.length - 6})`}
+              </Text>
             </Pressable>
-          ))}
+          ) : null}
           <Pressable style={styles.linkRow} onPress={() => openUrl("https://store.steampowered.com/specials")}>
             <Text style={styles.linkTxt}>All Steam specials ↗</Text>
           </Pressable>
@@ -410,6 +627,7 @@ export default function App() {
                 <Text style={styles.modalTitle}>{selected.name}</Text>
                 <Tag label={selected.category} />
                 <Text style={styles.modalDesc}>{selected.desc}</Text>
+                {selected.mobileFriendly ? <Text style={styles.mobileReady}>📱 Optimized for mobile browsers</Text> : null}
                 <View style={styles.tagRow}>
                   {selected.tags.map((t) => (
                     <Text key={t} style={styles.softTag}>
@@ -534,6 +752,7 @@ const styles = StyleSheet.create({
   libName: { color: colors.text, fontWeight: "700", marginBottom: 4 },
   libDesc: { color: colors.muted, fontSize: 13, lineHeight: 18 },
   community: { color: colors.mint, fontSize: 11, marginTop: 8 },
+  mobileReady: { color: colors.amber, fontSize: 11, marginTop: 8, fontWeight: "600" },
   addCard: { borderWidth: 1, borderStyle: "dashed", borderColor: colors.lineStrong, borderRadius: 14, padding: 22, alignItems: "center", marginTop: 4 },
   plus: { color: colors.mint, fontSize: 28, marginBottom: 4 },
   addTxt: { color: colors.muted },
@@ -541,7 +760,10 @@ const styles = StyleSheet.create({
   badge: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 },
   pulse: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.mint },
   badgeTxt: { color: colors.muted, fontSize: 12 },
-  deal: { backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.line, marginBottom: 12 },
+  currencyRow: { marginBottom: 12 },
+  currencyTxt: { color: colors.amber, fontSize: 12, fontWeight: "600" },
+  dealViewport: { height: 456, borderRadius: 16, overflow: "hidden", borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.bg2 },
+  deal: { height: DEAL_CARD_HEIGHT, backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.line, marginBottom: DEAL_GAP },
   dealStore: { color: colors.muted2, fontSize: 10, letterSpacing: 1 },
   dealTitle: { color: colors.text, fontSize: 16, fontWeight: "700", marginVertical: 6 },
   dealRow: { flexDirection: "row", alignItems: "baseline", gap: 8, marginBottom: 8 },
@@ -549,6 +771,9 @@ const styles = StyleSheet.create({
   dealNormal: { color: colors.muted2, textDecorationLine: "line-through" },
   dealSave: { color: colors.mint, backgroundColor: "rgba(62,217,166,0.16)", overflow: "hidden", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 100, fontSize: 11 },
   dealLink: { color: colors.text, fontSize: 13 },
+  autoNote: { color: colors.muted2, fontSize: 11, marginTop: 10, textAlign: "center" },
+  viewMore: { borderWidth: 1, borderColor: colors.lineStrong, borderRadius: 100, paddingVertical: 11, alignItems: "center", marginTop: 12 },
+  viewMoreTxt: { color: colors.text, fontSize: 12, fontWeight: "700" },
   linkRow: { marginTop: 8 },
   linkTxt: { color: colors.muted, fontSize: 13, textDecorationLine: "underline" },
   tabbar: { flexDirection: "row", borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.bg2, paddingBottom: 18, paddingTop: 8 },
