@@ -8,6 +8,7 @@ import {
   Dimensions,
   FlatList,
   Modal,
+  PanResponder,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -33,6 +34,8 @@ const SNAP = CARD_WIDTH + CARD_GAP;
 const DEAL_CARD_HEIGHT = 144;
 const DEAL_GAP = 12;
 const DEAL_SNAP = DEAL_CARD_HEIGHT + DEAL_GAP;
+const DEAL_PAGE_SIZE = 12;
+const MAX_ROLLING_DEALS = 40;
 
 type Tab = "play" | "library" | "deals";
 type DealFilter = (typeof DEAL_STORES)[number];
@@ -104,6 +107,101 @@ function mixDeals(items: Deal[]) {
   return mixed;
 }
 
+function appendRollingDeals(current: Deal[], incoming: Deal[]) {
+  const curated = current.filter((deal) => deal.store !== "Steam");
+  const previousSteam = current.filter((deal) => deal.store === "Steam");
+  const knownLinks = new Set(previousSteam.map((deal) => deal.link));
+  const newSteam = incoming.filter((deal) => !knownLinks.has(deal.link));
+  const steamCapacity = MAX_ROLLING_DEALS - curated.length;
+  const combinedSteam = previousSteam.concat(newSteam);
+  const dropped = Math.max(0, combinedSteam.length - steamCapacity);
+  return {
+    deals: mixDeals([...combinedSteam.slice(-steamCapacity), ...curated]),
+    dropped,
+  };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function DiscountSlider({
+  min,
+  max,
+  onChange,
+}: {
+  min: number;
+  max: number;
+  onChange: (min: number, max: number) => void;
+}) {
+  const [width, setWidth] = useState(1);
+  const values = useRef({ min, max, width, onChange });
+  const minStart = useRef(min);
+  const maxStart = useRef(max);
+  values.current = { min, max, width, onChange };
+
+  const minResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        minStart.current = values.current.min;
+      },
+      onPanResponderMove: (_, gesture) => {
+        const current = values.current;
+        const next = clamp(
+          Math.round(minStart.current + (gesture.dx / current.width) * 100),
+          0,
+          current.max,
+        );
+        current.onChange(next, current.max);
+      },
+    }),
+  ).current;
+
+  const maxResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        maxStart.current = values.current.max;
+      },
+      onPanResponderMove: (_, gesture) => {
+        const current = values.current;
+        const next = clamp(
+          Math.round(maxStart.current + (gesture.dx / current.width) * 100),
+          current.min,
+          100,
+        );
+        current.onChange(current.min, next);
+      },
+    }),
+  ).current;
+
+  return (
+    <Pressable
+      style={styles.rangeTrackWrap}
+      onLayout={(event) => setWidth(Math.max(1, event.nativeEvent.layout.width))}
+      onPress={(event) => {
+        const next = clamp(Math.round((event.nativeEvent.locationX / width) * 100), 0, 100);
+        if (Math.abs(next - min) <= Math.abs(next - max)) onChange(Math.min(next, max), max);
+        else onChange(min, Math.max(next, min));
+      }}
+    >
+      <View style={styles.rangeTrack} />
+      <View style={[styles.rangeFill, { left: `${min}%`, width: `${max - min}%` }]} />
+      <View
+        {...minResponder.panHandlers}
+        style={[styles.rangeThumb, { left: `${min}%`, transform: [{ translateX: -11 }] }]}
+      />
+      <View
+        {...maxResponder.panHandlers}
+        style={[styles.rangeThumb, { left: `${max}%`, transform: [{ translateX: -11 }] }]}
+      />
+    </Pressable>
+  );
+}
+
 function Tag({ label }: { label: string }) {
   const tone = categoryColors[label] ?? { bg: "rgba(255,255,255,0.08)", fg: colors.muted };
   return (
@@ -122,11 +220,18 @@ export default function App() {
   const [selected, setSelected] = useState<Game | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [deals, setDeals] = useState<Deal[]>(FALLBACK_DEALS);
+  const [deals, setDeals] = useState<Deal[]>(() => mixDeals(FALLBACK_DEALS));
   const [dealsLive, setDealsLive] = useState(false);
   const [dealsLoading, setDealsLoading] = useState(true);
   const [dealStore, setDealStore] = useState<DealFilter>("All");
-  const [showAllDeals, setShowAllDeals] = useState(false);
+  const [dealQuery, setDealQuery] = useState("");
+  const [searchedDeals, setSearchedDeals] = useState<Deal[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [minDiscount, setMinDiscount] = useState(0);
+  const [maxDiscount, setMaxDiscount] = useState(100);
+  const [minDiscountInput, setMinDiscountInput] = useState("0");
+  const [maxDiscountInput, setMaxDiscountInput] = useState("100");
+  const [loadingMoreDeals, setLoadingMoreDeals] = useState(false);
   const [dealIndex, setDealIndex] = useState(0);
   const [dealAutoPaused, setDealAutoPaused] = useState(false);
   const [currency, setCurrency] = useState({ code: "USD", rate: 1, locale: "en-US", detected: false });
@@ -135,6 +240,12 @@ export default function App() {
   const listRef = useRef<ScrollView>(null);
   const dealListRef = useRef<ScrollView>(null);
   const dealPauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dealPage = useRef(0);
+  const searchPage = useRef(0);
+  const feedHasMore = useRef(true);
+  const searchHasMore = useRef(true);
+  const dealLoadLocked = useRef(false);
+  const dealScrollY = useRef(0);
   const allGames = useMemo(() => GAMES.concat(userGames), [userGames]);
 
   useEffect(() => {
@@ -180,13 +291,13 @@ export default function App() {
     (async () => {
       try {
         const res = await fetch(
-          "https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=10&sortBy=Deal%20Rating",
+          `https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=${DEAL_PAGE_SIZE}&pageNumber=0&sortBy=Deal%20Rating`,
         );
         if (!res.ok) throw new Error("bad");
         const data = await res.json();
         if (!Array.isArray(data) || !data.length) throw new Error("empty");
         const steamDeals: Deal[] = data
-          .slice(0, 10)
+          .slice(0, DEAL_PAGE_SIZE)
           .map((d: { title: string; salePrice: string; normalPrice: string; savings: string; dealID: string }) => ({
             title: d.title,
             salePrice: parseFloat(d.salePrice),
@@ -195,10 +306,13 @@ export default function App() {
             link: "https://www.cheapshark.com/redirect?dealID=" + d.dealID,
             store: "Steam",
           }));
-        setDeals([...steamDeals, ...FALLBACK_DEALS.filter((deal) => deal.store !== "Steam")]);
+        setDeals(mixDeals([...steamDeals, ...FALLBACK_DEALS.filter((deal) => deal.store !== "Steam")]));
+        dealPage.current = 0;
+        feedHasMore.current = steamDeals.length === DEAL_PAGE_SIZE;
         setDealsLive(true);
       } catch {
-        setDeals(FALLBACK_DEALS);
+        setDeals(mixDeals(FALLBACK_DEALS));
+        feedHasMore.current = false;
         setDealsLive(false);
       } finally {
         setDealsLoading(false);
@@ -274,32 +388,173 @@ export default function App() {
     });
   }, [allGames, category, query]);
 
-  const filteredDeals = useMemo(() => {
-    const matching = dealStore === "All" ? deals : deals.filter((deal) => deal.store === dealStore);
-    return dealStore === "All" ? mixDeals(matching) : matching;
-  }, [dealStore, deals]);
+  const searchActive = dealQuery.trim().length > 0;
+  const discountActive = minDiscount > 0 || maxDiscount < 100;
+  const filtersActive = searchActive || dealStore !== "All" || discountActive;
 
-  const visibleDeals = useMemo(
-    () => (showAllDeals ? filteredDeals : filteredDeals.slice(0, 6)),
-    [filteredDeals, showAllDeals],
-  );
+  useEffect(() => {
+    const q = dealQuery.trim();
+    if (!q) {
+      setSearchedDeals(null);
+      setSearchLoading(false);
+      return;
+    }
+
+    let active = true;
+    setMinDiscount(0);
+    setMaxDiscount(100);
+    setMinDiscountInput("0");
+    setMaxDiscountInput("100");
+    searchPage.current = 0;
+    searchHasMore.current = true;
+    setSearchLoading(true);
+    const timer = setTimeout(async () => {
+      const normalized = q.toLowerCase();
+      const curatedMatches = FALLBACK_DEALS.filter(
+        (deal) => deal.store !== "Steam" && deal.title.toLowerCase().includes(normalized),
+      );
+      let steamMatches: Deal[] = [];
+      try {
+        const response = await fetch(
+          `https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=${DEAL_PAGE_SIZE}&pageNumber=0&sortBy=Deal%20Rating&title=${encodeURIComponent(q)}`,
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            steamMatches = data.map(
+              (deal: { title: string; salePrice: string; normalPrice: string; savings: string; dealID: string }) => ({
+                title: deal.title,
+                salePrice: parseFloat(deal.salePrice),
+                normalPrice: parseFloat(deal.normalPrice),
+                savings: Math.round(parseFloat(deal.savings)),
+                link: "https://www.cheapshark.com/redirect?dealID=" + deal.dealID,
+                store: "Steam" as const,
+              }),
+            );
+          }
+        }
+      } catch {
+        /* Curated Epic and Google Play matches remain available. */
+      }
+      if (active) {
+        setSearchedDeals(mixDeals([...steamMatches, ...curatedMatches]));
+        searchHasMore.current = steamMatches.length === DEAL_PAGE_SIZE;
+        setSearchLoading(false);
+      }
+    }, 550);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [dealQuery]);
+
+  const filteredDeals = useMemo(() => {
+    const source = dealQuery.trim() ? (searchedDeals ?? []) : deals;
+    return source.filter(
+      (deal) =>
+        (dealStore === "All" || deal.store === dealStore) &&
+        deal.savings >= minDiscount &&
+        deal.savings <= maxDiscount,
+    );
+  }, [dealQuery, searchedDeals, deals, dealStore, minDiscount, maxDiscount]);
+
+  const loadMoreDeals = useCallback(async () => {
+    const q = dealQuery.trim();
+    const isSearch = q.length > 0;
+    if (
+      dealLoadLocked.current ||
+      (isSearch ? !searchHasMore.current : !feedHasMore.current)
+    ) return;
+    dealLoadLocked.current = true;
+    setLoadingMoreDeals(true);
+    try {
+      const nextPage = (isSearch ? searchPage.current : dealPage.current) + 1;
+      const titleQuery = isSearch ? `&title=${encodeURIComponent(q)}` : "";
+      const response = await fetch(
+        `https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=${DEAL_PAGE_SIZE}&pageNumber=${nextPage}&sortBy=Deal%20Rating${titleQuery}`,
+      );
+      if (!response.ok) throw new Error("Deal feed unavailable");
+      const data = await response.json();
+      if (!Array.isArray(data) || !data.length) {
+        if (isSearch) searchHasMore.current = false;
+        else feedHasMore.current = false;
+        return;
+      }
+      const incoming: Deal[] = data.map(
+        (deal: { title: string; salePrice: string; normalPrice: string; savings: string; dealID: string }) => ({
+          title: deal.title,
+          salePrice: parseFloat(deal.salePrice),
+          normalPrice: parseFloat(deal.normalPrice),
+          savings: Math.round(parseFloat(deal.savings)),
+          link: "https://www.cheapshark.com/redirect?dealID=" + deal.dealID,
+          store: "Steam",
+        }),
+      );
+      const current = isSearch ? (searchedDeals ?? []) : deals;
+      const appended = appendRollingDeals(current, incoming);
+      if (isSearch) {
+        setSearchedDeals(appended.deals);
+        searchPage.current = nextPage;
+        searchHasMore.current = data.length === DEAL_PAGE_SIZE;
+      } else {
+        setDeals(appended.deals);
+        dealPage.current = nextPage;
+        feedHasMore.current = data.length === DEAL_PAGE_SIZE;
+      }
+
+      if (appended.dropped > 0) {
+        setTimeout(() => {
+          const adjustedY = Math.max(0, dealScrollY.current - appended.dropped * DEAL_SNAP);
+          dealScrollY.current = adjustedY;
+          dealListRef.current?.scrollTo({ y: adjustedY, animated: false });
+          setDealIndex(Math.round(adjustedY / DEAL_SNAP));
+        }, 0);
+      }
+    } catch {
+      /* Keep the current rolling window when the next page is unavailable. */
+    } finally {
+      setLoadingMoreDeals(false);
+      setTimeout(() => {
+        dealLoadLocked.current = false;
+      }, 700);
+    }
+  }, [dealQuery, deals, searchedDeals]);
 
   useEffect(() => {
     setDealIndex(0);
+    dealScrollY.current = 0;
     dealListRef.current?.scrollTo({ y: 0, animated: false });
-  }, [dealStore, showAllDeals]);
+  }, [dealStore, minDiscount, maxDiscount, dealQuery]);
 
   useEffect(() => {
-    if (tab !== "deals" || dealAutoPaused || visibleDeals.length < 2) return;
+    if (
+      tab === "deals" &&
+      !searchLoading &&
+      !loadingMoreDeals &&
+      filteredDeals.length < 4
+    ) {
+      void loadMoreDeals();
+    }
+  }, [filteredDeals.length, loadMoreDeals, loadingMoreDeals, searchLoading, tab]);
+
+  useEffect(() => {
+    if (
+      tab !== "deals" ||
+      dealAutoPaused ||
+      searchActive ||
+      filteredDeals.length < 2
+    ) return;
     const timer = setInterval(() => {
       setDealIndex((current) => {
-        const next = (current + 1) % visibleDeals.length;
+        const next = (current + 1) % filteredDeals.length;
         dealListRef.current?.scrollTo({ y: next * DEAL_SNAP, animated: true });
+        if (next >= filteredDeals.length - 3) void loadMoreDeals();
         return next;
       });
     }, 4200);
     return () => clearInterval(timer);
-  }, [dealAutoPaused, tab, visibleDeals.length]);
+  }, [dealAutoPaused, filteredDeals.length, loadMoreDeals, searchActive, tab]);
 
   useEffect(
     () => () => {
@@ -313,6 +568,45 @@ export default function App() {
     if (dealPauseTimer.current) clearTimeout(dealPauseTimer.current);
     dealPauseTimer.current = setTimeout(() => setDealAutoPaused(false), 10000);
   }, []);
+
+  const setDiscountRange = useCallback((nextMin: number, nextMax: number) => {
+    const safeMin = clamp(Math.round(nextMin), 0, 100);
+    const safeMax = clamp(Math.round(nextMax), safeMin, 100);
+    setMinDiscount(safeMin);
+    setMaxDiscount(safeMax);
+    setMinDiscountInput(String(safeMin));
+    setMaxDiscountInput(String(safeMax));
+  }, []);
+
+  const changeMinDiscountInput = useCallback(
+    (text: string) => {
+      const cleaned = text.replace(/\D/g, "").slice(0, 3);
+      setMinDiscountInput(cleaned);
+      if (!cleaned) return;
+      const next = clamp(Number(cleaned), 0, 100);
+      setMinDiscount(next);
+      if (next > maxDiscount) {
+        setMaxDiscount(next);
+        setMaxDiscountInput(String(next));
+      }
+    },
+    [maxDiscount],
+  );
+
+  const changeMaxDiscountInput = useCallback(
+    (text: string) => {
+      const cleaned = text.replace(/\D/g, "").slice(0, 3);
+      setMaxDiscountInput(cleaned);
+      if (!cleaned) return;
+      const next = clamp(Number(cleaned), 0, 100);
+      setMaxDiscount(next);
+      if (next < minDiscount) {
+        setMinDiscount(next);
+        setMinDiscountInput(String(next));
+      }
+    },
+    [minDiscount],
+  );
 
   const formatMoney = useCallback(
     (usd: number) =>
@@ -530,20 +824,67 @@ export default function App() {
               {currency.detected ? `Prices converted to ${currency.code}` : "Detecting local currency…"}
             </Text>
           </View>
+          <TextInput
+            value={dealQuery}
+            onChangeText={setDealQuery}
+            placeholder="Search deals across all stores…"
+            placeholderTextColor={colors.muted2}
+            autoCapitalize="none"
+            returnKeyType="search"
+            style={styles.dealSearch}
+          />
+          <Text style={styles.filterLabel}>STORE</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pills}>
             {DEAL_STORES.map((store) => (
               <Pressable
                 key={store}
-                onPress={() => {
-                  setDealStore(store);
-                  setShowAllDeals(false);
-                }}
+                onPress={() => setDealStore(store)}
                 style={[styles.pill, dealStore === store && styles.pillOn]}
               >
                 <Text style={[styles.pillTxt, dealStore === store && styles.pillTxtOn]}>{store}</Text>
               </Pressable>
             ))}
           </ScrollView>
+          <Text style={styles.filterLabel}>DISCOUNT RANGE</Text>
+          <View style={styles.discountControlRow}>
+            <View style={styles.discountSliderBox}>
+              <DiscountSlider min={minDiscount} max={maxDiscount} onChange={setDiscountRange} />
+            </View>
+            <View style={styles.discountInputs}>
+              <TextInput
+                value={minDiscountInput}
+                onChangeText={changeMinDiscountInput}
+                onBlur={() => setDiscountRange(minDiscount, maxDiscount)}
+                keyboardType="number-pad"
+                maxLength={3}
+                selectTextOnFocus
+                style={styles.discountInput}
+              />
+              <Text style={styles.discountHyphen}>–</Text>
+              <TextInput
+                value={maxDiscountInput}
+                onChangeText={changeMaxDiscountInput}
+                onBlur={() => setDiscountRange(minDiscount, maxDiscount)}
+                keyboardType="number-pad"
+                maxLength={3}
+                selectTextOnFocus
+                style={styles.discountInput}
+              />
+              <Text style={styles.discountPercent}>%</Text>
+            </View>
+          </View>
+          {filtersActive ? (
+            <Pressable
+              style={styles.clearFilters}
+              onPress={() => {
+                setDealQuery("");
+                setDealStore("All");
+                setDiscountRange(0, 100);
+              }}
+            >
+              <Text style={styles.clearFiltersTxt}>Clear filters · resume live feed</Text>
+            </Pressable>
+          ) : null}
           <View style={styles.dealViewport}>
             <ScrollView
               ref={dealListRef}
@@ -553,12 +894,27 @@ export default function App() {
               decelerationRate="fast"
               onScrollBeginDrag={pauseDealAutoScroll}
               onTouchStart={pauseDealAutoScroll}
+              scrollEventThrottle={100}
+              onScroll={(event) => {
+                const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+                dealScrollY.current = contentOffset.y;
+                if (
+                  contentOffset.y + layoutMeasurement.height >= contentSize.height - DEAL_SNAP * 2
+                ) {
+                  void loadMoreDeals();
+                }
+              }}
               onMomentumScrollEnd={(event) => {
                 const next = Math.round(event.nativeEvent.contentOffset.y / DEAL_SNAP);
-                setDealIndex(Math.max(0, Math.min(next, visibleDeals.length - 1)));
+                setDealIndex(Math.max(0, Math.min(next, filteredDeals.length - 1)));
               }}
             >
-              {visibleDeals.map((deal) => (
+              {searchLoading ? (
+                <View style={styles.dealState}>
+                  <ActivityIndicator color={colors.mint} />
+                  <Text style={styles.dealStateTxt}>Searching Steam, Epic Games, and Google Play…</Text>
+                </View>
+              ) : filteredDeals.length ? filteredDeals.map((deal) => (
                 <Pressable
                   key={deal.store + deal.title + deal.link}
                   style={styles.deal}
@@ -575,19 +931,34 @@ export default function App() {
                   </View>
                   <Text style={styles.dealLink}>View deal ↗</Text>
                 </Pressable>
-              ))}
+              )) : (
+                <View style={styles.dealState}>
+                  <Text style={styles.noResultsIcon}>⌕</Text>
+                  <Text style={styles.noResultsTitle}>No matching deals found</Text>
+                  <Text style={styles.dealStateTxt}>
+                    Nothing matched across Steam, Epic Games, or Google Play. Try another game or discount range.
+                  </Text>
+                </View>
+              )}
+              {loadingMoreDeals ? (
+                <View style={styles.loadingMore}>
+                  <ActivityIndicator color={colors.mint} size="small" />
+                  <Text style={styles.dealStateTxt}>
+                    {searchActive ? "Searching for more matches…" : "Loading more popular deals…"}
+                  </Text>
+                </View>
+              ) : null}
             </ScrollView>
           </View>
           <Text style={styles.autoNote}>
-            {dealAutoPaused ? "Manual scroll detected · auto-scroll resumes in 10 seconds" : "Auto-scrolling · swipe anytime"}
+            {searchActive
+              ? "Auto-scroll paused during search · matching deals still load"
+              : dealAutoPaused
+                ? "Manual scroll detected · auto-scroll resumes in 10 seconds"
+                : discountActive
+                  ? "Auto-scroll active · loading more deals in this discount range"
+                  : "Endless live feed · new deals load automatically"}
           </Text>
-          {filteredDeals.length > 6 ? (
-            <Pressable style={styles.viewMore} onPress={() => setShowAllDeals((shown) => !shown)}>
-              <Text style={styles.viewMoreTxt}>
-                {showAllDeals ? "Show fewer deals" : `View more deals (${filteredDeals.length - 6})`}
-              </Text>
-            </Pressable>
-          ) : null}
           <Pressable style={styles.linkRow} onPress={() => openUrl("https://store.steampowered.com/specials")}>
             <Text style={styles.linkTxt}>All Steam specials ↗</Text>
           </Pressable>
@@ -762,6 +1133,20 @@ const styles = StyleSheet.create({
   badgeTxt: { color: colors.muted, fontSize: 12 },
   currencyRow: { marginBottom: 12 },
   currencyTxt: { color: colors.amber, fontSize: 12, fontWeight: "600" },
+  dealSearch: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.lineStrong, color: colors.text, borderRadius: 100, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 14 },
+  filterLabel: { color: colors.muted2, fontSize: 10, letterSpacing: 1.2, marginBottom: 7, fontWeight: "700" },
+  discountControlRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 },
+  discountSliderBox: { flex: 1, paddingHorizontal: 11 },
+  rangeTrackWrap: { height: 32, justifyContent: "center" },
+  rangeTrack: { position: "absolute", left: 0, right: 0, height: 4, borderRadius: 2, backgroundColor: colors.lineStrong },
+  rangeFill: { position: "absolute", height: 4, borderRadius: 2, backgroundColor: colors.amber },
+  rangeThumb: { position: "absolute", width: 22, height: 22, borderRadius: 11, backgroundColor: colors.text, borderWidth: 3, borderColor: colors.amber },
+  discountInputs: { flexDirection: "row", alignItems: "center", gap: 5 },
+  discountInput: { width: 48, color: colors.text, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.lineStrong, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 7, textAlign: "center", fontSize: 12 },
+  discountHyphen: { color: colors.muted, fontSize: 14 },
+  discountPercent: { color: colors.muted2, fontSize: 11 },
+  clearFilters: { alignSelf: "flex-start", marginBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.amber },
+  clearFiltersTxt: { color: colors.amber, fontSize: 12, fontWeight: "600" },
   dealViewport: { height: 456, borderRadius: 16, overflow: "hidden", borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.bg2 },
   deal: { height: DEAL_CARD_HEIGHT, backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.line, marginBottom: DEAL_GAP },
   dealStore: { color: colors.muted2, fontSize: 10, letterSpacing: 1 },
@@ -772,8 +1157,11 @@ const styles = StyleSheet.create({
   dealSave: { color: colors.mint, backgroundColor: "rgba(62,217,166,0.16)", overflow: "hidden", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 100, fontSize: 11 },
   dealLink: { color: colors.text, fontSize: 13 },
   autoNote: { color: colors.muted2, fontSize: 11, marginTop: 10, textAlign: "center" },
-  viewMore: { borderWidth: 1, borderColor: colors.lineStrong, borderRadius: 100, paddingVertical: 11, alignItems: "center", marginTop: 12 },
-  viewMoreTxt: { color: colors.text, fontSize: 12, fontWeight: "700" },
+  dealState: { minHeight: 430, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, gap: 10 },
+  dealStateTxt: { color: colors.muted, fontSize: 12, lineHeight: 18, textAlign: "center" },
+  noResultsIcon: { color: colors.muted2, fontSize: 34 },
+  noResultsTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
+  loadingMore: { height: 62, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9 },
   linkRow: { marginTop: 8 },
   linkTxt: { color: colors.muted, fontSize: 13, textDecorationLine: "underline" },
   tabbar: { flexDirection: "row", borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.bg2, paddingBottom: 18, paddingTop: 8 },
