@@ -1,0 +1,205 @@
+export type Game = {
+  id: string;
+  name: string;
+  category: string;
+  tags: string[];
+  icon: string;
+  desc: string;
+  url: string;
+  isCommunity?: boolean;
+};
+
+export const GAMES: Game[] = [
+  {
+    id: "wordle",
+    name: "Wordle",
+    category: "Word",
+    tags: ["daily", "single-player"],
+    icon: "🟩",
+    desc: "Guess the secret five-letter word in six tries. Every guess recolors its tiles green, yellow, or gray to steer your next attempt — one shared puzzle a day.",
+    url: "https://www.nytimes.com/games/wordle/index.html",
+  },
+  {
+    id: "connections",
+    name: "Connections",
+    category: "Word",
+    tags: ["daily", "single-player"],
+    icon: "🔗",
+    desc: "Sort sixteen words into four hidden groups of four. Categories run from obvious to devilishly tricky, and a wrong group costs you a strike.",
+    url: "https://www.nytimes.com/games/connections",
+  },
+  {
+    id: "scrabble",
+    name: "Scrabble — playscrabble.com",
+    category: "Word",
+    tags: ["multiplayer", "classic"],
+    icon: "🔤",
+    desc: "The classic tile-and-board word game, free in your browser against friends or strangers — no download or account required to start a game.",
+    url: "https://playscrabble.com",
+  },
+  {
+    id: "bombparty",
+    name: "Bomb Party — JKLM.FUN",
+    category: "Word",
+    tags: ["party", "multiplayer"],
+    icon: "💣",
+    desc: "Type a real word containing the given letters before the fuse runs out. Miss the beat and the bomb goes off in your hands — one of the most-played free party rooms online.",
+    url: "https://jklm.fun",
+  },
+  {
+    id: "skribbl",
+    name: "Skribbl.io",
+    category: "Drawing",
+    tags: ["party", "multiplayer"],
+    icon: "🎨",
+    desc: "Free browser Pictionary: one player draws a secret word while everyone else races to guess it in the chat. The artist rotates every round.",
+    url: "https://skribbl.io",
+  },
+  {
+    id: "gartic",
+    name: "Gartic Phone",
+    category: "Drawing",
+    tags: ["party", "multiplayer"],
+    icon: "📞",
+    desc: "A drawing-and-guessing telephone game — your prompt gets redrawn and re-guessed down a chain of players, with gloriously mangled results revealed at the end.",
+    url: "https://garticphone.com",
+  },
+  {
+    id: "quickdraw",
+    name: "Quick, Draw!",
+    category: "Drawing",
+    tags: ["single-player", "ai"],
+    icon: "✏️",
+    desc: "A twenty-second doodling game where a neural network tries to guess what you're sketching in real time. Built by Google's AI research team.",
+    url: "https://quickdraw.withgoogle.com",
+  },
+  {
+    id: "krunker",
+    name: "Krunker.io",
+    category: "Arcade",
+    tags: ["fps", "multiplayer"],
+    icon: "🔫",
+    desc: "A fast, blocky first-person shooter with dozens of maps, classes, and weapons — running entirely in the browser, no download needed.",
+    url: "https://krunker.io",
+  },
+  {
+    id: "shellshockers",
+    name: "Shell Shockers",
+    category: "Arcade",
+    tags: ["fps", "multiplayer"],
+    icon: "🥚",
+    desc: "Egg-versus-egg multiplayer shooting, humor over gore, with a full arsenal and matches that start in seconds.",
+    url: "https://shellshock.io",
+  },
+  {
+    id: "1v1lol",
+    name: "1v1.LOL",
+    category: "Arcade",
+    tags: ["building", "multiplayer"],
+    icon: "🏗️",
+    desc: "Build-and-battle third-person shooting in the Fortnite spirit, free in the browser with 1v1, box-fight, and battle-royale modes.",
+    url: "https://1v1.lol",
+  },
+  {
+    id: "slither",
+    name: "Slither.io",
+    category: "Arcade",
+    tags: ["io", "multiplayer"],
+    icon: "🐍",
+    desc: "Grow a glowing snake by eating pellets and cutting off rivals — the game that kicked off the whole '.io' genre.",
+    url: "https://slither.io",
+  },
+  {
+    id: "agario",
+    name: "Agar.io",
+    category: "Arcade",
+    tags: ["io", "multiplayer"],
+    icon: "🔵",
+    desc: "Absorb smaller cells, dodge bigger ones, and try to become the biggest blob on the board in this minimalist multiplayer classic.",
+    url: "https://agar.io",
+  },
+  {
+    id: "diepio",
+    name: "Diep.io",
+    category: "Arcade",
+    tags: ["io", "multiplayer"],
+    icon: "🔺",
+    desc: "Level up a tank through a skill tree while blasting shapes and rival players, with dozens of tank classes to specialize into.",
+    url: "https://diep.io",
+  },
+  {
+    id: "paperio",
+    name: "Paper.io 2",
+    category: "Arcade",
+    tags: ["io", "multiplayer"],
+    icon: "🟪",
+    desc: "Claim territory by drawing a trail back to your zone. Cross another player's trail and you take them out — but the reverse is just as true.",
+    url: "https://paper-io.com",
+  },
+  {
+    id: "2048",
+    name: "2048",
+    category: "Puzzle",
+    tags: ["single-player"],
+    icon: "🔢",
+    desc: "Slide numbered tiles to merge matching pairs and reach the elusive 2048 tile. Simple rules, endlessly replayable.",
+    url: "https://play2048.co",
+  },
+  {
+    id: "sudoku",
+    name: "Sudoku.com",
+    category: "Puzzle",
+    tags: ["single-player"],
+    icon: "🧩",
+    desc: "Unlimited free Sudoku boards across every difficulty, with hint and note tools built right into the browser grid.",
+    url: "https://sudoku.com",
+  },
+  {
+    id: "tetris",
+    name: "Tetris.com",
+    category: "Puzzle",
+    tags: ["single-player", "classic"],
+    icon: "🧱",
+    desc: "The official home of the falling-block classic, playable free in the browser with the same line-clearing tension as ever.",
+    url: "https://tetris.com",
+  },
+  {
+    id: "chess",
+    name: "Chess.com",
+    category: "Strategy",
+    tags: ["multiplayer"],
+    icon: "♟️",
+    desc: "Play chess against people worldwide or a computer opponent, with puzzles and lessons alongside free live games.",
+    url: "https://www.chess.com",
+  },
+  {
+    id: "geoguessr",
+    name: "GeoGuessr",
+    category: "Strategy",
+    tags: ["single-player", "geography"],
+    icon: "🌍",
+    desc: "Dropped into a random Street View location, you scan for road signs, license plates, and terrain clues to pin your best guess on the world map.",
+    url: "https://www.geoguessr.com",
+  },
+  {
+    id: "codenames",
+    name: "Codenames",
+    category: "Strategy",
+    tags: ["party", "multiplayer"],
+    icon: "🕵️",
+    desc: "Two teams give one-word clues to guide teammates to their agents on a shared word grid, while dodging the other team's agents and the assassin.",
+    url: "https://codenames.game",
+  },
+];
+
+export const CATEGORIES = ["All", "Word", "Drawing", "Arcade", "Puzzle", "Strategy", "Community"] as const;
+
+export const FALLBACK_DEALS = [
+  { title: "Hollow Knight", salePrice: "4.99", normalPrice: "14.99", savings: 67, link: "https://store.steampowered.com/app/367520/Hollow_Knight/" },
+  { title: "Stardew Valley", salePrice: "8.99", normalPrice: "14.99", savings: 40, link: "https://store.steampowered.com/app/413150/Stardew_Valley/" },
+  { title: "Portal 2", salePrice: "2.49", normalPrice: "9.99", savings: 75, link: "https://store.steampowered.com/app/620/Portal_2/" },
+  { title: "Terraria", salePrice: "4.99", normalPrice: "9.99", savings: 50, link: "https://store.steampowered.com/app/105600/Terraria/" },
+  { title: "Slay the Spire", salePrice: "9.99", normalPrice: "24.99", savings: 60, link: "https://store.steampowered.com/app/646570/Slay_the_Spire/" },
+];
+
+export type Deal = (typeof FALLBACK_DEALS)[number];

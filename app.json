@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Gamer Hub",
+    "slug": "gamer-hub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "gamerhub",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#150F2E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.clerz.gamerhub"
+    },
+    "android": {
+      "package": "com.clerz.gamerhub",
+      "adaptiveIcon": {
+        "backgroundColor": "#150F2E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
+  }
+}
