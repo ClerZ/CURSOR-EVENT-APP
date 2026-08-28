@@ -1,0 +1,69 @@
+GAMER HUB - API LIST
+====================
+
+External web APIs currently used
+--------------------------------
+
+1. CheapShark Deals API
+   Endpoint:
+   https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=10&sortBy=Deal%20Rating
+
+   Purpose:
+   Loads live Steam game discounts, prices, savings percentages, and deal IDs.
+
+   Authentication:
+   No API key is currently required.
+
+2. ipapi Location API
+   Endpoint:
+   https://ipapi.co/json/
+
+   Purpose:
+   Detects the visitor's approximate country, language, and local currency from
+   their IP address so prices can be localized automatically.
+
+   Authentication:
+   No API key is currently used.
+
+3. ExchangeRate-API Open Access
+   Endpoint:
+   https://open.er-api.com/v6/latest/USD
+
+   Purpose:
+   Retrieves exchange rates from USD and converts deal prices into the visitor's
+   detected local currency.
+
+   Authentication:
+   No API key is currently required for this open endpoint.
+
+App and device APIs
+-------------------
+
+4. Expo WebBrowser
+   Package:
+   expo-web-browser
+
+   Purpose:
+   Opens game pages and store deal links in the system browser.
+
+5. React Native AsyncStorage
+   Package:
+   @react-native-async-storage/async-storage
+
+   Purpose:
+   Saves community-added games locally on the user's device.
+
+Store links that are not data APIs
+----------------------------------
+
+- Steam Store: https://store.steampowered.com/
+- Epic Games Store: https://store.epicgames.com/
+- Google Play Store: https://play.google.com/store/
+
+Notes
+-----
+
+- Epic Games and Google Play deals are currently curated catalog entries rather
+  than being loaded from official store APIs.
+- If location or exchange-rate lookup fails, the app falls back to locale-based
+  detection or USD pricing.
