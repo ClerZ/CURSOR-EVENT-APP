@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gamer Hub — Free Online Games Worth Bookmarking</title>
+<meta name="description" content="Gamer Hub is a rotating marquee of the internet's best free browser games — word games, drawing games, .io arcade games, puzzles, and more.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #150F2E;
+    --bg-2: #1A1338;
+    --surface: #1E1740;
+    --surface-2: #271C52;
+    --line: rgba(245,242,255,0.09);
+    --line-strong: rgba(245,242,255,0.16);
+    --text: #F5F2FF;
+    --muted: #A79FC9;
+    --muted-2: #8377A8;
+
+    --amber: #FFB627;
+    --amber-ink: #3A2A05;
+    --pink: #FF4D8D;
+    --mint: #3ED9A6;
+    --violet: #8C7CF0;
+    --coral: #FF7A59;
+
+    --font-display: "Bungee", system-ui, sans-serif;
+    --font-body: "Space Grotesk", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin: 0;
+    background: radial-gradient(120% 140% at 15% -10%, #241a49 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection{ background: var(--pink); color: #1A1338; }
+  a{ color: inherit; }
+  button{ font-family: inherit; }
+  img, svg{ display:block; max-width: 100%; }
+
+  :focus-visible{
+    outline: 3px solid var(--mint);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .wrap{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    backdrop-filter: blur(10px);
+    background: rgba(21,15,46,0.75);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 14px 24px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+  }
+  .brand .dot{ color: var(--amber); }
+  .topnav{
+    display:flex;
+    gap: 22px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .topnav a{ text-decoration:none; }
+  .topnav a:hover{ color: var(--text); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 64px 0 40px;
+    text-align:center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset: -40% -10% auto -10%;
+    height: 480px;
+    background: radial-gradient(closest-side, rgba(255,182,39,0.16), transparent 70%),
+                radial-gradient(closest-side, rgba(255,77,141,0.14), transparent 70%) 70% 20%/60% 60% no-repeat;
+    pointer-events: none;
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mint);
+    margin: 0 0 18px;
+  }
+  .hero h1{
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 6vw, 4.6rem);
+    line-height: 1.02;
+    margin: 0 auto;
+    max-width: 15ch;
+    text-wrap: balance;
+  }
+  .hero h1 .accent{ color: var(--amber); }
+  .marquee-rule{
+    width: min(560px, 80%);
+    height: 10px;
+    margin: 26px auto 22px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+  }
+  .marquee-rule i{
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--amber);
+    opacity: 0.25;
+    animation: bulbChase 1.8s linear infinite;
+  }
+  @keyframes bulbChase{
+    0%, 100%{ opacity: 0.2; box-shadow: none; }
+    50%{ opacity: 1; box-shadow: 0 0 10px 2px rgba(255,182,39,0.9); }
+  }
+  .hero p.lede{
+    max-width: 48ch;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .hero-stats{
+    margin-top: 34px;
+    display:flex;
+    gap: 28px;
+    justify-content:center;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--muted-2);
+  }
+  .hero-stats b{ color: var(--text); font-size: 1rem; }
+
+  /* ---------- Section shells ---------- */
+  section{ padding: 56px 0; }
+  .section-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .section-head h2{
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    margin: 0 0 6px;
+  }
+  .section-head p{
+    margin:0; color: var(--muted); max-width: 56ch;
+  }
+  .eyebrow-sm{
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    display:block;
+    margin-bottom: 8px;
+  }
+
+  /* ---------- Cabinet slider ---------- */
+  .cabinet-section{
+    padding-top: 8px;
+  }
+  .cabinet-shell{
+    position: relative;
+  }
+  .cabinet-viewport{
+    overflow: hidden;
+    padding: 30px 6px 10px;
+  }
+  .cabinet-track{
+    display:flex;
+    gap: 20px;
+    transition: transform 0.55s cubic-bezier(.22,.9,.32,1);
+    will-change: transform;
+  }
+  .cab-card{
+    position: relative;
+    flex: 0 0 260px;
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 22px 20px 20px;
+    cursor: pointer;
+    transform: scale(0.92);
+    opacity: 0.55;
+    transition: transform 0.45s ease, opacity 0.45s ease, border-color 0.3s ease;
+    text-align: left;
+  }
+  .cab-card:hover{ opacity: 0.85; }
+  .cab-card.is-active{
+    transform: scale(1);
+    opacity: 1;
+    border-color: var(--line-strong);
+  }
+  .cab-card .chase{
+    position:absolute; inset: -1px;
+    border-radius: var(--radius-lg);
+    pointer-events:none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .cab-card.is-active .chase{ opacity: 1; }
+  .cab-card .bulb{
+    position:absolute;
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--amber);
+    opacity: 0.15;
+  }
+  .cab-card.is-active .bulb{
+    animation: bulbChase 1.6s linear infinite;
+  }
+  .cab-icon{
+    font-size: 2.4rem;
+    line-height:1;
+    display:inline-flex;
+    align-items:center; justify-content:center;
+    width: 58px; height: 58px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 16px;
+  }
+  .cab-card h3{
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.08rem;
+    margin: 0 0 8px;
+  }
+  .cab-card .tag{
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 100px;
+    display:inline-block;
+    margin-bottom: 12px;
+  }
+  .cab-card p{
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cabinet-controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 14px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .ctrl-btn{
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    font-size: 1rem;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .ctrl-btn:hover{ background: var(--surface-2); transform: translateY(-1px); }
+  .ctrl-pill{
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 100px;
+    cursor:pointer;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    display:inline-flex; align-items:center; gap:8px;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .ctrl-pill:hover{ background: var(--surface-2); transform: translateY(-1px); }
+
+  .see-more-row{ text-align:center; margin-top: 30px; }
+  .btn-primary{
+    background: var(--amber);
+    color: var(--amber-ink);
+    border: none;
+    font-weight: 700;
+    padding: 14px 26px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 10px 30px -14px rgba(255,182,39,0.7);
+  }
+  .btn-primary:hover{ transform: translateY(-2px); }
+  .btn-ghost{
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    padding: 13px 24px;
+    border-radius: 100px;
+    cursor:pointer;
+    font-size: 0.92rem;
+  }
+  .btn-ghost:hover{ background: var(--surface); }
+
+  /* ---------- Library ---------- */
+  .library-section{
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    transition: max-height 0.6s ease, opacity 0.5s ease;
+  }
+  .library-section.is-open{
+    max-height: 3600px;
+    opacity: 1;
+    padding-top: 40px;
+    padding-bottom: 56px;
+  }
+  .library-toolbar{
+    display:flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items:center;
+    margin-bottom: 22px;
+  }
+  .search-input{
+    flex: 1 1 240px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 100px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+  }
+  .search-input::placeholder{ color: var(--muted-2); }
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-pill{
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--muted);
+    padding: 9px 16px;
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor:pointer;
+  }
+  .filter-pill.is-selected{
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  .library-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+  }
+  .lib-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    text-align:left;
+    cursor:pointer;
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .lib-card:hover{ border-color: var(--line-strong); transform: translateY(-3px); }
+  .lib-card-top{ display:flex; align-items:center; gap:12px; }
+  .lib-icon{
+    font-size: 1.5rem;
+    width: 42px; height:42px;
+    border-radius: 12px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(255,255,255,0.05);
+    flex-shrink: 0;
+  }
+  .lib-card h4{ margin:0; font-size: 1rem; }
+  .lib-card .tag{
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 100px;
+    display:inline-block;
+    width: fit-content;
+  }
+  .lib-card p{ margin:0; color: var(--muted); font-size: 0.84rem; }
+  .lib-card .community-flag{
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--mint);
+    letter-spacing: 0.05em;
+  }
+
+  .add-card{
+    border: 1px dashed var(--line-strong);
+    background: transparent;
+    border-radius: var(--radius-md);
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:center;
+    gap: 8px;
+    padding: 18px;
+    cursor:pointer;
+    color: var(--muted);
+    min-height: 148px;
+  }
+  .add-card:hover{ color: var(--text); border-color: var(--mint); }
+  .add-card .plus{
+    font-size: 1.6rem;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(62,217,166,0.12);
+    color: var(--mint);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .no-results{
+    grid-column: 1/-1;
+    text-align:center;
+    color: var(--muted);
+    padding: 30px 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  /* category colors */
+  .tag-word{ background: rgba(255,182,39,0.16); color: var(--amber); }
+  .tag-drawing{ background: rgba(255,77,141,0.16); color: var(--pink); }
+  .tag-arcade{ background: rgba(62,217,166,0.16); color: var(--mint); }
+  .tag-puzzle{ background: rgba(140,124,240,0.18); color: var(--violet); }
+  .tag-strategy{ background: rgba(255,122,89,0.18); color: var(--coral); }
+
+  /* ---------- Deals ---------- */
+  .deals-section{
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.02) 20%, transparent 90%);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .deals-badge{
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--line-strong);
+    color: var(--muted);
+    display:inline-flex;
+    align-items:center;
+    gap: 7px;
+  }
+  .deals-badge .pulse{
+    width: 7px; height:7px; border-radius:50%;
+    background: var(--mint);
+  }
+  .deals-badge.is-live .pulse{ animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse{
+    0%,100%{ box-shadow: 0 0 0 0 rgba(62,217,166,0.6); }
+    50%{ box-shadow: 0 0 0 6px rgba(62,217,166,0); }
+  }
+  .deals-track-wrap{ overflow-x:auto; padding-bottom: 6px; scrollbar-width: thin; }
+  .deals-track{
+    display:flex; gap: 16px;
+    width: max-content;
+  }
+  .deal-ticket{
+    position: relative;
+    flex: 0 0 220px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .deal-ticket::before, .deal-ticket::after{
+    content:"";
+    position:absolute;
+    width: 16px; height:16px;
+    background: var(--bg);
+    border-radius: 50%;
+    top: 50%; transform: translateY(-50%);
+  }
+  .deal-ticket::before{ left: -9px; }
+  .deal-ticket::after{ right: -9px; }
+  .deal-store{
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted-2);
+  }
+  .deal-ticket h4{ margin: 6px 0 10px; font-size: 0.95rem; line-height:1.25; min-height: 2.5em;}
+  .deal-price-row{ display:flex; align-items:baseline; gap:8px; margin-bottom: 12px; }
+  .deal-sale{ font-family: var(--font-mono); font-weight:600; font-size: 1.05rem; color: var(--mint); }
+  .deal-normal{ font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted-2); text-decoration: line-through; }
+  .deal-savings{
+    font-family: var(--font-mono); font-size: 0.68rem;
+    background: rgba(62,217,166,0.16); color: var(--mint);
+    padding: 2px 8px; border-radius: 100px;
+  }
+  .deal-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size: 0.82rem; text-decoration:none; color: var(--text);
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 2px;
+  }
+  .deal-link:hover{ border-color: var(--text); }
+  .deals-more{
+    margin-top: 22px;
+    display:flex; gap: 20px; flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: 0.78rem;
+  }
+  .deals-more a{ text-decoration: none; color: var(--muted); border-bottom: 1px dotted var(--line-strong); }
+  .deals-more a:hover{ color: var(--text); }
+
+  /* ---------- Modal ---------- */
+  dialog#gameModal, dialog#addGameDialog{
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: 0;
+    background: var(--surface-2);
+    color: var(--text);
+    width: min(520px, 92vw);
+  }
+  dialog::backdrop{
+    background: rgba(10,7,24,0.72);
+    backdrop-filter: blur(3px);
+  }
+  .modal-inner{ padding: 30px; }
+  .modal-close{
+    position:absolute; top: 16px; right: 16px;
+    background: rgba(255,255,255,0.06);
+    border: none; color: var(--text);
+    width: 34px; height:34px; border-radius:50%;
+    cursor:pointer; font-size: 1rem;
+  }
+  .modal-head{ display:flex; gap:16px; align-items:center; margin-bottom: 18px; }
+  .modal-icon{
+    font-size: 2.6rem; width: 68px; height:68px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.06);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .modal-head h3{ margin: 0 0 6px; font-size: 1.3rem; }
+  .modal-body p{ color: var(--muted); font-size: 0.95rem; }
+  .modal-tags{ display:flex; gap:8px; flex-wrap:wrap; margin: 14px 0 20px; }
+  .modal-tags span{
+    font-family: var(--font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing:0.05em;
+    padding: 4px 10px; border-radius:100px;
+    background: rgba(255,255,255,0.06); color: var(--muted);
+  }
+  .modal-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+  .modal-domain{
+    font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted-2);
+    margin-top: 14px;
+  }
+
+  /* Add game form */
+  .form-row{ margin-bottom: 16px; display:flex; flex-direction:column; gap:6px; }
+  .form-row label{ font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing:0.05em; color: var(--muted); }
+  .form-row input, .form-row select, .form-row textarea{
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    resize: vertical;
+  }
+  .form-note{ font-size: 0.78rem; color: var(--muted-2); margin: 4px 0 18px; }
+  .form-actions{ display:flex; gap:12px; justify-content:flex-end; }
+
+  .toast{
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translate(-50%, 140%);
+    background: var(--mint);
+    color: #072B21;
+    padding: 13px 22px;
+    border-radius: 100px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    z-index: 80;
+    transition: transform 0.35s ease;
+    box-shadow: 0 12px 30px -10px rgba(0,0,0,0.5);
+  }
+  .toast.is-visible{ transform: translate(-50%, 0); }
+
+  footer{
+    padding: 46px 0 60px;
+    text-align:center;
+    color: var(--muted-2);
+    font-size: 0.85rem;
+  }
+  footer .foot-brand{ font-family: var(--font-display); color: var(--muted); font-size: 1rem; margin-bottom: 10px;}
+  footer a{ color: var(--muted); }
+
+  @media (max-width: 640px){
+    .topnav{ display:none; }
+    .cab-card{ flex-basis: 220px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">GAMER<span class="dot">•</span>HUB</div>
+    <nav class="topnav">
+      <a href="#cabinet">Play</a>
+      <a href="#library">Library</a>
+      <a href="#deals">Deals</a>
+    </nav>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Free · browser-based · no downloads</p>
+    <h1>Every great <span class="accent">web game</span>, one marquee away.</h1>
+    <div class="marquee-rule" aria-hidden="true">
+      <i style="animation-delay:0s"></i><i style="animation-delay:0.15s"></i><i style="animation-delay:0.3s"></i>
+      <i style="animation-delay:0.45s"></i><i style="animation-delay:0.6s"></i><i style="animation-delay:0.75s"></i>
+      <i style="animation-delay:0.9s"></i><i style="animation-delay:1.05s"></i><i style="animation-delay:1.2s"></i>
+    </div>
+    <p class="lede">Word games, drawing games, shooters, puzzles, and party games — spun up in a rotating cabinet row so you always spot something new to play right now.</p>
+    <div class="hero-stats">
+      <span><b id="statGameCount">20</b> games loaded</span>
+      <span><b>0</b> installs required</span>
+      <span><b>$0</b> to play</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="cabinet-section" id="cabinet">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow-sm">Now on the marquee</span>
+          <h2>Tap a cabinet to peek inside</h2>
+        </div>
+      </div>
+
+      <div class="cabinet-shell">
+        <div class="cabinet-viewport">
+          <div class="cabinet-track" id="cabinetTrack" aria-live="off"></div>
+        </div>
+        <div class="cabinet-controls">
+          <button class="ctrl-btn" id="btnPrev" aria-label="Previous game">‹</button>
+          <button class="ctrl-pill" id="btnPlayPause" aria-pressed="true">⏸ <span id="playPauseLabel">Pause rotation</span></button>
+          <button class="ctrl-pill" id="btnShuffle">🎲 Shuffle</button>
+          <button class="ctrl-btn" id="btnNext" aria-label="Next game">›</button>
+        </div>
+      </div>
+
+      <div class="see-more-row">
+        <button class="btn-primary" id="btnSeeMore">See all games ▾</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="library-section" id="library">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow-sm">Full library</span>
+          <h2>Search, filter, or add your own</h2>
+        </div>
+      </div>
+      <div class="library-toolbar">
+        <input type="search" class="search-input" id="librarySearch" placeholder="Search games… e.g. drawing, io, chess">
+        <div class="pill-row" id="categoryPills"></div>
+      </div>
+      <div class="library-grid" id="libraryGrid"></div>
+    </div>
+  </section>
+
+  <section class="deals-section" id="deals">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow-sm">Beyond free-to-play</span>
+          <h2>Right now on sale</h2>
+          <p>Live discount feed from Steam's storefront (via the public CheapShark API), for when you're ready to spend more than $0.</p>
+        </div>
+        <span class="deals-badge" id="dealsBadge"><span class="pulse"></span> Loading…</span>
+      </div>
+      <div class="deals-track-wrap">
+        <div class="deals-track" id="dealsTrack"></div>
+      </div>
+      <div class="deals-more">
+        <a href="https://store.steampowered.com/specials" target="_blank" rel="noopener">All Steam specials ↗</a>
+        <a href="https://store.epicgames.com/en-US/free-games" target="_blank" rel="noopener">Epic Games' current freebies ↗</a>
+        <a href="https://play.google.com/store/apps/collection/promotion_3000000e64_offers" target="_blank" rel="noopener">Google Play offers ↗</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-brand">GAMER · HUB</div>
+    <p>An independent discovery page linking out to third-party games and stores. Gamer Hub isn't affiliated with, and doesn't host, any of the games listed — click through and play on the original site.</p>
+    <p>Games you add are stored to this page's shared list and become visible to everyone who visits. Please keep submissions safe-for-work and link only to the game itself.</p>
+  </div>
+</footer>
+
+<dialog id="gameModal" closedby="any" aria-labelledby="modalTitle">
+  <div class="modal-inner">
+    <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+    <div class="modal-head">
+      <div class="modal-icon" id="modalIcon"></div>
+      <div>
+        <h3 id="modalTitle"></h3>
+        <span class="tag" id="modalTag"></span>
+      </div>
+    </div>
+    <div class="modal-body">
+      <p id="modalDesc"></p>
+      <div class="modal-tags" id="modalTags"></div>
+    </div>
+    <div class="modal-actions">
+      <a class="btn-primary" id="modalPlayLink" href="#" target="_blank" rel="noopener">Play now ↗</a>
+      <button class="btn-ghost" id="modalCloseBtn2">Close</button>
+    </div>
+    <p class="modal-domain" id="modalDomain"></p>
+  </div>
+</dialog>
+
+<dialog id="addGameDialog" closedby="any" aria-labelledby="addGameTitle">
+  <div class="modal-inner">
+    <button class="modal-close" id="addGameCloseBtn" aria-label="Close">✕</button>
+    <h3 id="addGameTitle" style="margin-top:0;">Add a game to Gamer Hub</h3>
+    <p class="form-note">Suggest a standalone browser game (not a site that hosts many games). It'll appear in the library for every visitor.</p>
+    <form id="addGameForm">
+      <div class="form-row">
+        <label for="fieldName">Game name</label>
+        <input type="text" id="fieldName" required maxlength="60" placeholder="e.g. Wordle">
+      </div>
+      <div class="form-row">
+        <label for="fieldUrl">Link to the game</label>
+        <input type="url" id="fieldUrl" required placeholder="https://example.com">
+      </div>
+      <div class="form-row">
+        <label for="fieldCategory">Category</label>
+        <select id="fieldCategory">
+          <option value="Word">Word</option>
+          <option value="Drawing">Drawing</option>
+          <option value="Arcade">Arcade</option>
+          <option value="Puzzle">Puzzle</option>
+          <option value="Strategy">Strategy</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="fieldDesc">Short description</label>
+        <textarea id="fieldDesc" rows="3" maxlength="220" required placeholder="What makes it worth playing?"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" id="addGameCancelBtn">Cancel</button>
+        <button type="submit" class="btn-primary">Add to Hub</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------------------------------------------------
+     Curated game catalog
+  --------------------------------------------------------- */
+  const GAMES = [
+    { id:"wordle", name:"Wordle", category:"Word", tags:["daily","single-player"], icon:"🟩",
+      desc:"Guess the secret five-letter word in six tries. Every guess recolors its tiles green, yellow, or gray to steer your next attempt — one shared puzzle a day.",
+      url:"https://www.nytimes.com/games/wordle/index.html" },
+    { id:"connections", name:"Connections", category:"Word", tags:["daily","single-player"], icon:"🔗",
+      desc:"Sort sixteen words into four hidden groups of four. Categories run from obvious to devilishly tricky, and a wrong group costs you a strike.",
+      url:"https://www.nytimes.com/games/connections" },
+    { id:"scrabble", name:"Scrabble — playscrabble.com", category:"Word", tags:["multiplayer","classic"], icon:"🔤",
+      desc:"The classic tile-and-board word game, free in your browser against friends or strangers — no download or account required to start a game.",
+      url:"https://playscrabble.com" },
+    { id:"bombparty", name:"Bomb Party — JKLM.FUN", category:"Word", tags:["party","multiplayer"], icon:"💣",
+      desc:"Type a real word containing the given letters before the fuse runs out. Miss the beat and the bomb goes off in your hands — one of the most-played free party rooms online.",
+      url:"https://jklm.fun" },
+    { id:"skribbl", name:"Skribbl.io", category:"Drawing", tags:["party","multiplayer"], icon:"🎨",
+      desc:"Free browser Pictionary: one player draws a secret word while everyone else races to guess it in the chat. The artist rotates every round.",
+      url:"https://skribbl.io" },
+    { id:"gartic", name:"Gartic Phone", category:"Drawing", tags:["party","multiplayer"], icon:"📞",
+      desc:"A drawing-and-guessing telephone game — your prompt gets redrawn and re-guessed down a chain of players, with gloriously mangled results revealed at the end.",
+      url:"https://garticphone.com" },
+    { id:"quickdraw", name:"Quick, Draw!", category:"Drawing", tags:["single-player","ai"], icon:"✏️",
+      desc:"A twenty-second doodling game where a neural network tries to guess what you're sketching in real time. Built by Google's AI research team.",
+      url:"https://quickdraw.withgoogle.com" },
+    { id:"krunker", name:"Krunker.io", category:"Arcade", tags:["fps","multiplayer"], icon:"🔫",
+      desc:"A fast, blocky first-person shooter with dozens of maps, classes, and weapons — running entirely in the browser, no download needed.",
+      url:"https://krunker.io" },
+    { id:"shellshockers", name:"Shell Shockers", category:"Arcade", tags:["fps","multiplayer"], icon:"🥚",
+      desc:"Egg-versus-egg multiplayer shooting, humor over gore, with a full arsenal and matches that start in seconds.",
+      url:"https://shellshock.io" },
+    { id:"1v1lol", name:"1v1.LOL", category:"Arcade", tags:["building","multiplayer"], icon:"🏗️",
+      desc:"Build-and-battle third-person shooting in the Fortnite spirit, free in the browser with 1v1, box-fight, and battle-royale modes.",
+      url:"https://1v1.lol" },
+    { id:"slither", name:"Slither.io", category:"Arcade", tags:["io","multiplayer"], icon:"🐍",
+      desc:"Grow a glowing snake by eating pellets and cutting off rivals — the game that kicked off the whole '.io' genre.",
+      url:"https://slither.io" },
+    { id:"agario", name:"Agar.io", category:"Arcade", tags:["io","multiplayer"], icon:"🔵",
+      desc:"Absorb smaller cells, dodge bigger ones, and try to become the biggest blob on the board in this minimalist multiplayer classic.",
+      url:"https://agar.io" },
+    { id:"diepio", name:"Diep.io", category:"Arcade", tags:["io","multiplayer"], icon:"🔺",
+      desc:"Level up a tank through a skill tree while blasting shapes and rival players, with dozens of tank classes to specialize into.",
+      url:"https://diep.io" },
+    { id:"paperio", name:"Paper.io 2", category:"Arcade", tags:["io","multiplayer"], icon:"🟪",
+      desc:"Claim territory by drawing a trail back to your zone. Cross another player's trail and you take them out — but the reverse is just as true.",
+      url:"https://paper-io.com" },
+    { id:"2048", name:"2048", category:"Puzzle", tags:["single-player"], icon:"🔢",
+      desc:"Slide numbered tiles to merge matching pairs and reach the elusive 2048 tile. Simple rules, endlessly replayable.",
+      url:"https://play2048.co" },
+    { id:"sudoku", name:"Sudoku.com", category:"Puzzle", tags:["single-player"], icon:"🧩",
+      desc:"Unlimited free Sudoku boards across every difficulty, with hint and note tools built right into the browser grid.",
+      url:"https://sudoku.com" },
+    { id:"tetris", name:"Tetris.com", category:"Puzzle", tags:["single-player","classic"], icon:"🧱",
+      desc:"The official home of the falling-block classic, playable free in the browser with the same line-clearing tension as ever.",
+      url:"https://tetris.com" },
+    { id:"chess", name:"Chess.com", category:"Strategy", tags:["multiplayer"], icon:"♟️",
+      desc:"Play chess against people worldwide or a computer opponent, with puzzles and lessons alongside free live games.",
+      url:"https://www.chess.com" },
+    { id:"geoguessr", name:"GeoGuessr", category:"Strategy", tags:["single-player","geography"], icon:"🌍",
+      desc:"Dropped into a random Street View location, you scan for road signs, license plates, and terrain clues to pin your best guess on the world map.",
+      url:"https://www.geoguessr.com" },
+    { id:"codenames", name:"Codenames", category:"Strategy", tags:["party","multiplayer"], icon:"🕵️",
+      desc:"Two teams give one-word clues to guide teammates to their agents on a shared word grid, while dodging the other team's agents and the assassin.",
+      url:"https://codenames.game" }
+  ];
+
+  const CATEGORY_CLASS = {
+    Word: "tag-word",
+    Drawing: "tag-drawing",
+    Arcade: "tag-arcade",
+    Puzzle: "tag-puzzle",
+    Strategy: "tag-strategy"
+  };
+
+  const FALLBACK_DEALS = [
+    { title:"Hollow Knight", salePrice:"4.99", normalPrice:"14.99", savings:67, link:"https://store.steampowered.com/app/367520/Hollow_Knight/" },
+    { title:"Stardew Valley", salePrice:"8.99", normalPrice:"14.99", savings:40, link:"https://store.steampowered.com/app/413150/Stardew_Valley/" },
+    { title:"Portal 2", salePrice:"2.49", normalPrice:"9.99", savings:75, link:"https://store.steampowered.com/app/620/Portal_2/" },
+    { title:"Terraria", salePrice:"4.99", normalPrice:"9.99", savings:50, link:"https://store.steampowered.com/app/105600/Terraria/" },
+    { title:"Slay the Spire", salePrice:"9.99", normalPrice:"24.99", savings:60, link:"https://store.steampowered.com/app/646570/Slay_the_Spire/" }
+  ];
+
+  /* ---------------------------------------------------------
+     State
+  --------------------------------------------------------- */
+  let userGames = [];
+  let cabinetOrder = [];
+  let cabinetIndex = 0;
+  let autoplayTimer = null;
+  let isPlaying = true;
+  let activeCategory = "All";
+  let searchText = "";
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function allGames(){ return GAMES.concat(userGames); }
+
+  function slug(str){
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function domainOf(url){
+    try{ return new URL(url).hostname.replace(/^www\./, ""); }
+    catch(e){ return url; }
+  }
+
+  /* ---------------------------------------------------------
+     Persistent shared storage for community-added games
+  --------------------------------------------------------- */
+  async function loadUserGames(){
+    try{
+      const res = await window.storage.get("user-games", true);
+      userGames = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){
+      userGames = [];
+    }
+  }
+
+  async function saveUserGames(){
+    try{
+      await window.storage.set("user-games", JSON.stringify(userGames), true);
+    }catch(e){
+      console.error("Could not save community games:", e);
+    }
+  }
+
+  /* ---------------------------------------------------------
+     Cabinet (auto-rotating slider)
+  --------------------------------------------------------- */
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildCabinetOrder(){
+    cabinetOrder = shuffle(allGames().map((_, i) => i));
+    cabinetIndex = 0;
+  }
+
+  function bulbMarkup(count){
+    let html = "";
+    for(let i = 0; i < count; i++){
+      const pct = i / count;
+      const angle = pct * Math.PI * 2;
+      // Roughly place bulbs around a rounded rectangle perimeter using a simple ellipse approximation
+      const x = 50 + 48 * Math.cos(angle);
+      const y = 50 + 48 * Math.sin(angle);
+      const delay = (pct * 1.6).toFixed(2);
+      html += `<span class="bulb" style="left:${x}%; top:${y}%; animation-delay:${delay}s"></span>`;
+    }
+    return html;
+  }
+
+  function cardHtml(game, isActive){
+    const catClass = CATEGORY_CLASS[game.category] || "tag-word";
+    return `
+      <article class="cab-card${isActive ? " is-active" : ""}" data-id="${game.id}" tabindex="0" role="button" aria-label="View details for ${escapeHtml(game.name)}">
+        <div class="chase">${bulbMarkup(14)}</div>
+        <div class="cab-icon">${game.icon}</div>
+        <span class="tag ${catClass}">${game.category}</span>
+        <h3>${escapeHtml(game.name)}</h3>
+        <p>${escapeHtml(game.desc)}</p>
+      </article>
+    `;
+  }
+
+  function renderCabinet(){
+    const track = document.getElementById("cabinetTrack");
+    const games = allGames();
+    if(!cabinetOrder.length || cabinetOrder.length !== games.length){
+      buildCabinetOrder();
+    }
+    track.innerHTML = cabinetOrder.map((gi, pos) => cardHtml(games[gi], pos === cabinetIndex)).join("");
+    // center the active card
+    const cardWidth = 280; // approx card + gap
+    const viewportEl = track.parentElement;
+    const centerOffset = viewportEl.clientWidth / 2 - cardWidth / 2;
+    const offset = cabinetIndex * cardWidth - centerOffset;
+    track.style.transform = `translateX(${-offset}px)`;
+
+    Array.from(track.children).forEach((card) => {
+      card.addEventListener("click", onCardActivate);
+      card.addEventListener("keydown", (e) => {
+        if(e.key === "Enter" || e.key === " "){ e.preventDefault(); onCardActivate(e); }
+      });
+    });
+  }
+
+  function onCardActivate(e){
+    const card = e.currentTarget;
+    const game = allGames().find(g => g.id === card.dataset.id);
+    if(game) openGameModal(game);
+  }
+
+  function cabinetStep(dir){
+    const len = cabinetOrder.length;
+    if(!len) return;
+    cabinetIndex = (cabinetIndex + dir + len) % len;
+    renderCabinet();
+  }
+
+  function startAutoplay(){
+    stopAutoplay();
+    if(reduceMotion) return;
+    autoplayTimer = window.setInterval(() => cabinetStep(1), 4200);
+  }
+  function stopAutoplay(){
+    if(autoplayTimer){ window.clearInterval(autoplayTimer); autoplayTimer = null; }
+  }
+
+  function setupCabinetControls(){
+    document.getElementById("btnPrev").addEventListener("click", () => { cabinetStep(-1); if(isPlaying) startAutoplay(); });
+    document.getElementById("btnNext").addEventListener("click", () => { cabinetStep(1); if(isPlaying) startAutoplay(); });
+
+    document.getElementById("btnShuffle").addEventListener("click", () => {
+      buildCabinetOrder();
+      renderCabinet();
+      if(isPlaying) startAutoplay();
+    });
+
+    const playPauseBtn = document.getElementById("btnPlayPause");
+    playPauseBtn.addEventListener("click", () => {
+      isPlaying = !isPlaying;
+      document.getElementById("playPauseLabel").textContent = isPlaying ? "Pause rotation" : "Resume rotation";
+      playPauseBtn.setAttribute("aria-pressed", String(isPlaying));
+      playPauseBtn.firstChild.textContent = isPlaying ? "⏸ " : "▶ ";
+      if(isPlaying) startAutoplay(); else stopAutoplay();
+    });
+
+    const shell = document.querySelector(".cabinet-shell");
+    shell.addEventListener("mouseenter", stopAutoplay);
+    shell.addEventListener("mouseleave", () => { if(isPlaying) startAutoplay(); });
+    shell.addEventListener("focusin", stopAutoplay);
+    shell.addEventListener("focusout", () => { if(isPlaying) startAutoplay(); });
+
+    window.addEventListener("resize", renderCabinet);
+  }
+
+  /* ---------------------------------------------------------
+     Library grid
+  --------------------------------------------------------- */
+  function buildCategoryPills(){
+    const cats = ["All", "Word", "Drawing", "Arcade", "Puzzle", "Strategy", "Community"];
+    const row = document.getElementById("categoryPills");
+    row.innerHTML = cats.map(c =>
+      `<button class="filter-pill${c === activeCategory ? " is-selected" : ""}" data-cat="${c}">${c}</button>`
+    ).join("");
+    Array.from(row.children).forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeCategory = btn.dataset.cat;
+        buildCategoryPills();
+        renderLibrary();
+      });
+    });
+  }
+
+  function libCardHtml(game){
+    const catClass = CATEGORY_CLASS[game.category] || "tag-word";
+    return `
+      <button class="lib-card" data-id="${game.id}">
+        <div class="lib-card-top">
+          <div class="lib-icon">${game.icon}</div>
+          <div>
+            <h4>${escapeHtml(game.name)}</h4>
+            <span class="tag ${catClass}">${game.category}</span>
+          </div>
+        </div>
+        <p>${escapeHtml(game.desc)}</p>
+        ${game.isCommunity ? '<span class="community-flag">★ Added by a visitor</span>' : ""}
+      </button>
+    `;
+  }
+
+  function renderLibrary(){
+    const grid = document.getElementById("libraryGrid");
+    const q = searchText.trim().toLowerCase();
+    let games = allGames();
+
+    if(activeCategory === "Community"){
+      games = games.filter(g => g.isCommunity);
+    } else if(activeCategory !== "All"){
+      games = games.filter(g => g.category === activeCategory);
+    }
+    if(q){
+      games = games.filter(g =>
+        g.name.toLowerCase().includes(q) ||
+        g.category.toLowerCase().includes(q) ||
+        (g.tags || []).some(t => t.toLowerCase().includes(q)) ||
+        g.desc.toLowerCase().includes(q)
+      );
+    }
+
+    let html = games.map(libCardHtml).join("");
+    html += `
+      <button class="add-card" id="addGameCard">
+        <span class="plus">+</span>
+        <span>Add your own game</span>
+      </button>
+    `;
+    if(!games.length){
+      grid.innerHTML = `<p class="no-results">No games match "${escapeHtml(searchText)}" yet — add one below.</p>` + `<button class="add-card" id="addGameCard"><span class="plus">+</span><span>Add your own game</span></button>`;
+    }else{
+      grid.innerHTML = html;
+    }
+
+    Array.from(grid.querySelectorAll(".lib-card")).forEach(card => {
+      card.addEventListener("click", () => {
+        const game = allGames().find(g => g.id === card.dataset.id);
+        if(game) openGameModal(game);
+      });
+    });
+    const addBtn = document.getElementById("addGameCard");
+    if(addBtn) addBtn.addEventListener("click", openAddGameDialog);
+  }
+
+  /* ---------------------------------------------------------
+     See more / reveal library
+  --------------------------------------------------------- */
+  function setupSeeMore(){
+    const btn = document.getElementById("btnSeeMore");
+    const section = document.getElementById("library");
+    btn.addEventListener("click", () => {
+      const opening = !section.classList.contains("is-open");
+      section.classList.toggle("is-open");
+      btn.textContent = opening ? "Hide the library ▴" : "See all games ▾";
+      if(opening){
+        window.setTimeout(() => section.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }), 80);
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------
+     Game detail modal
+  --------------------------------------------------------- */
+  function openGameModal(game){
+    const modal = document.getElementById("gameModal");
+    document.getElementById("modalIcon").textContent = game.icon;
+    document.getElementById("modalTitle").textContent = game.name;
+    const tagEl = document.getElementById("modalTag");
+    tagEl.textContent = game.category;
+    tagEl.className = "tag " + (CATEGORY_CLASS[game.category] || "tag-word");
+    document.getElementById("modalDesc").textContent = game.desc;
+    document.getElementById("modalTags").innerHTML = (game.tags || []).map(t => `<span>${escapeHtml(t)}</span>`).join("");
+    const link = document.getElementById("modalPlayLink");
+    link.href = game.url;
+    document.getElementById("modalDomain").textContent = "Opens " + domainOf(game.url) + " in a new tab";
+    modal.showModal();
+  }
+
+  function setupModal(){
+    const modal = document.getElementById("gameModal");
+    document.getElementById("modalCloseBtn").addEventListener("click", () => modal.close());
+    document.getElementById("modalCloseBtn2").addEventListener("click", () => modal.close());
+    if(!("closedBy" in HTMLDialogElement.prototype)){
+      modal.addEventListener("click", (e) => {
+        if(e.target !== modal) return;
+        const r = modal.getBoundingClientRect();
+        const inside = r.top <= e.clientY && e.clientY <= r.top + r.height && r.left <= e.clientX && e.clientX <= r.left + r.width;
+        if(!inside) modal.close();
+      });
+    }
+  }
+
+  /* ---------------------------------------------------------
+     Add-your-own-game dialog
+  --------------------------------------------------------- */
+  function openAddGameDialog(){
+    document.getElementById("addGameDialog").showModal();
+  }
+
+  function showToast(msg){
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.classList.add("is-visible");
+    window.setTimeout(() => toast.classList.remove("is-visible"), 3200);
+  }
+
+  function setupAddGameDialog(){
+    const dialog = document.getElementById("addGameDialog");
+    const form = document.getElementById("addGameForm");
+    document.getElementById("addGameCloseBtn").addEventListener("click", () => dialog.close());
+    document.getElementById("addGameCancelBtn").addEventListener("click", () => dialog.close());
+    if(!("closedBy" in HTMLDialogElement.prototype)){
+      dialog.addEventListener("click", (e) => {
+        if(e.target !== dialog) return;
+        const r = dialog.getBoundingClientRect();
+        const inside = r.top <= e.clientY && e.clientY <= r.top + r.height && r.left <= e.clientX && e.clientX <= r.left + r.width;
+        if(!inside) dialog.close();
+      });
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("fieldName").value.trim();
+      const urlRaw = document.getElementById("fieldUrl").value.trim();
+      const category = document.getElementById("fieldCategory").value;
+      const desc = document.getElementById("fieldDesc").value.trim();
+
+      let url;
+      try{
+        url = new URL(urlRaw);
+        if(!/^https?:$/.test(url.protocol)) throw new Error("bad protocol");
+      }catch(err){
+        showToast("That link doesn't look valid — check it and try again.");
+        return;
+      }
+      if(!name || !desc) return;
+
+      const icons = ["🎮","🕹️","👾","🎯","🃏","🧠","⭐"];
+      const newGame = {
+        id: slug(name) + "-" + Date.now().toString(36),
+        name, category, desc,
+        tags: ["community"],
+        icon: icons[Math.floor(Math.random() * icons.length)],
+        url: url.toString(),
+        isCommunity: true
+      };
+      userGames.push(newGame);
+      await saveUserGames();
+      buildCabinetOrder();
+      renderCabinet();
+      renderLibrary();
+      document.getElementById("statGameCount").textContent = String(allGames().length);
+      form.reset();
+      dialog.close();
+      showToast("Added! " + name + " is now visible to everyone visiting Gamer Hub.");
+    });
+  }
+
+  /* ---------------------------------------------------------
+     Search wiring
+  --------------------------------------------------------- */
+  function setupSearch(){
+    const input = document.getElementById("librarySearch");
+    input.addEventListener("input", () => {
+      searchText = input.value;
+      renderLibrary();
+    });
+  }
+
+  /* ---------------------------------------------------------
+     Deals (live via CheapShark, static fallback otherwise)
+  --------------------------------------------------------- */
+  function dealHtml(d){
+    return `
+      <article class="deal-ticket">
+        <span class="deal-store">Steam</span>
+        <h4>${escapeHtml(d.title)}</h4>
+        <div class="deal-price-row">
+          <span class="deal-sale">$${d.salePrice}</span>
+          <span class="deal-normal">$${d.normalPrice}</span>
+          <span class="deal-savings">-${d.savings}%</span>
+        </div>
+        <a class="deal-link" href="${d.link}" target="_blank" rel="noopener">View deal ↗</a>
+      </article>
+    `;
+  }
+
+  function renderDeals(list, isLive){
+    document.getElementById("dealsTrack").innerHTML = list.map(dealHtml).join("");
+    const badge = document.getElementById("dealsBadge");
+    if(isLive){
+      badge.classList.add("is-live");
+      badge.innerHTML = '<span class="pulse"></span> Live from CheapShark';
+    }else{
+      badge.classList.remove("is-live");
+      badge.innerHTML = '<span class="pulse"></span> Example deals — live feed unavailable right now';
+    }
+  }
+
+  async function loadDeals(){
+    try{
+      const res = await fetch("https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=10&sortBy=Deal%20Rating");
+      if(!res.ok) throw new Error("bad response");
+      const data = await res.json();
+      if(!Array.isArray(data) || !data.length) throw new Error("empty payload");
+      const mapped = data.slice(0, 10).map(d => ({
+        title: d.title,
+        salePrice: parseFloat(d.salePrice).toFixed(2),
+        normalPrice: parseFloat(d.normalPrice).toFixed(2),
+        savings: Math.round(parseFloat(d.savings)),
+        link: "https://www.cheapshark.com/redirect?dealID=" + d.dealID
+      }));
+      renderDeals(mapped, true);
+    }catch(e){
+      renderDeals(FALLBACK_DEALS, false);
+    }
+  }
+
+  /* ---------------------------------------------------------
+     Init
+  --------------------------------------------------------- */
+  async function init(){
+    await loadUserGames();
+    document.getElementById("statGameCount").textContent = String(allGames().length);
+    buildCabinetOrder();
+    renderCabinet();
+    setupCabinetControls();
+    startAutoplay();
+
+    buildCategoryPills();
+    renderLibrary();
+    setupSearch();
+    setupSeeMore();
+
+    setupModal();
+    setupAddGameDialog();
+
+    loadDeals();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>
